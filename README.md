@@ -15,13 +15,13 @@
 
 ## Quick start
 
-Install the package from this repository, then use `@annotated_test` anywhere you
-would normally use `Test.@test`. For frequent classroom tests, `@atest` is a
-short alias.
+Install the package with Julia's package manager, then use `@annotated_test`
+anywhere you would normally use `Test.@test`. For frequent classroom tests,
+`@atest` is a short alias.
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/mroughan/AnnotatedTests.jl")
+Pkg.add("AnnotatedTests")
 ```
 
 ```julia
