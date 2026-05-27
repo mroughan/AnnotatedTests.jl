@@ -6,8 +6,9 @@
 [![Aqua QA](https://img.shields.io/badge/qa-Aqua.jl-4c8eda.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![JET](https://img.shields.io/badge/static%20analysis-JET.jl-9558b2.svg)](https://github.com/aviatesk/JET.jl)
 
-**AnnotatedTests** is a small extension of Julia's standard `Test` library for
-tests that produce more helpful feedback, especially for teaching.
+**AnnotatedTests** is a small extension of Julia's standard `Test`
+  library to build tests with more helpful feedback, especially for
+  teaching.
 
 > AnnotatedTests.jl is experimental. The package is usable, but the public API
 > may change before a stable 1.0 release.
