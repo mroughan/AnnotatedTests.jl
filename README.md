@@ -6,7 +6,8 @@ tests that produce more helpful feedback, especially for teaching.
 ## Quick start
 
 Install the package from this repository, then use `@annotated_test` anywhere you
-would normally use `Test.@test`:
+would normally use `Test.@test`. For frequent classroom tests, `@atest` is a
+short alias.
 
 ```julia
 using Pkg
@@ -16,14 +17,15 @@ Pkg.add(url="https://github.com/YOUR-ORG/AnnotatedTests.jl")
 ```julia
 using AnnotatedTests
 
-@annotated_test "sorts a vector" mysort([3,1,2]) == [1,2,3] ctx -> begin
-    "Your sorting function returned $(ctx.lhs), but the expected answer was $(ctx.rhs)."
-end
+@annotated_test "sorts a vector" mysort([3, 1, 2]) == [1, 2, 3] \
+    "Return the values in increasing order."
+
+@atest "keeps all values" sort(student_values()) == [1, 2, 3] unordered_feedback()
 ```
 
-The feedback handler can be a string, a function, or a callable object. When the
-expression is a binary comparison, the handler receives the evaluated left and
-right values as part of an `AnnotationContext`.
+The feedback handler can be a string, a function, or a callable object. Strings
+are the easiest way to add a hint. Functions receive an `AnnotationContext` when
+you need richer feedback.
 
 ## What it is for
 
@@ -33,12 +35,60 @@ reading the result needs a hint about how to improve their answer.
 
 ```julia
 @annotated_test "returns integers" student_values() isa Vector{Int} \
-    "Return a Vector{Int}; check the element type of your result."
+    type_feedback(Vector{Int})
 ```
 
 Supported binary comparisons include `==`, `!=`, `<`, `<=`, `>`, `>=`, `===`,
 `!==`, `in`, `∈`, `isa`, and `≈`. Each side of the comparison is evaluated once,
 so expressions with side effects are handled safely.
+
+For binary comparisons, `ctx.lhs` and `ctx.rhs` are available as the traditional
+left- and right-hand sides. The aliases `ctx.observed`, `ctx.expected`,
+`ctx.LHS`, and `ctx.RHS` are also provided for feedback text.
+
+## Feedback helpers
+
+The package includes small helper constructors for common teaching messages:
+
+```julia
+@atest "close answer" estimate() ≈ 10 expected_feedback("Check your rounding.")
+@atest "right type" answer() isa Vector{Int} type_feedback()
+@atest "right length" answer() == expected length_feedback()
+@atest "same items" answer() == expected unordered_feedback()
+```
+
+`≈` records a `difference` term when it can be computed:
+
+```julia
+@atest "close enough" estimate() ≈ 10 ctx ->
+    "The difference was $(ctx.difference)."
+```
+
+## Broken annotated tests
+
+Use `@annotated_broken` for known issues or stretch checks. It mirrors
+`Test.@test_broken`: a currently failing condition is recorded as broken, while
+an unexpectedly passing condition is reported by the test framework.
+
+```julia
+@annotated_broken "stretch goal" advanced_answer() == expected \
+    "This check documents the next feature to implement."
+```
+
+## Custom comparison operators
+
+Additional binary operators can be registered with optional derived terms:
+
+```julia
+within10(x, y) = abs(x - y) <= 10
+
+register_annotated_operator!(:within10; terms=(lhs, rhs) -> (
+    difference = abs(lhs - rhs),
+))
+
+@atest "within tolerance" within10(student_answer(), 100) ctx ->
+    "The difference was $(ctx.difference); it must be at most 10."
+```
 
 ## Examples
 

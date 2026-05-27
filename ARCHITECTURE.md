@@ -21,12 +21,17 @@ Your output contains the right values, but they are not sorted. Check the order 
 Some features:
 
 + Support strings, functions, and callable structs for on_error.
-+ Work with binary relational operators: ==, !=, <, <=, >, >=, ≈, where there is a well-defined LHS and RHS
++ Work with binary relational operators: ==, !=, <, <=, >, >=, ≈, where there is a well-defined LHS and RHS.
++ Allow additional relational operators to be registered, with optional derived terms such as `difference`.
 + Avoid double evaluation. A test like pop!(xs) == 3 must not evaluate pop!(xs) twice.
 + Distinguish test failure from test error. If evaluating the expression throws, that should remain an ordinary Test.Error, possibly with extra annotation.
 + Keep output CI-friendly. Student feedback should not break compatibility with Pkg.test.
 
-The package should remain small, clean, and easy to use. Avoid adding excessive features.
+The package should remain small, clean, and easy to use. It is intentionally a
+thin layer over `Test`, and `Test` should remain a runtime dependency so
+annotated checks behave like ordinary Julia tests. Avoid adding a separate test
+runner, grading engine, report format, or assignment-management workflow until
+there is a clear need.
 
 ## Example use
 
@@ -37,6 +42,7 @@ using AnnotatedTests
 @testset "Assignment 1" begin
     @annotated_test "question 1: sorted result" student_q1(x) == [1,2,3] explain_sorting
     @annotated_test "question 2: type" student_q2() isa Vector{Int} "Your function should return a Vector{Int}."
+    @annotated_broken "extension task" student_q3() == expected "Optional extension."
 end
 ```
 
@@ -44,3 +50,4 @@ end
 
 1. Maintain macro hygiene
 2. Careful parse of test expressions to allow use in the explanation without double evaluation
+3. Keep operator extension simple: users can register relations and terms, but AnnotatedTests should not become a symbolic expression system
