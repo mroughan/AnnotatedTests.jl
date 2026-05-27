@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mroughan/AnnotatedTests.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/mroughan/AnnotatedTests.jl/actions/workflows/CI.yml)
 [![Documentation](https://github.com/mroughan/AnnotatedTests.jl/actions/workflows/Documentation.yml/badge.svg)](https://github.com/mroughan/AnnotatedTests.jl/actions/workflows/Documentation.yml)
-[![Codecov](https://codecov.io/gh/mroughan/AnnotatedTests.jl/branch/main/graph/badge.svg?token=MK532CLS72))](https://codecov.io/gh/mroughan/AnnotatedTests.jl)
+[![Codecov](https://codecov.io/gh/mroughan/AnnotatedTests.jl/branch/main/graph/badge.svg?token=MK532CLS72)](https://codecov.io/gh/mroughan/AnnotatedTests.jl)
 [![Aqua QA](https://img.shields.io/badge/qa-Aqua.jl-4c8eda.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![JET](https://img.shields.io/badge/static%20analysis-JET.jl-9558b2.svg)](https://github.com/aviatesk/JET.jl)
 
