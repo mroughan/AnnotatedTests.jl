@@ -1,16 +1,10 @@
 name = "AnnotatedTests"
 uuid = "8e1b4f52-4d85-4fb0-a1ef-9a8a0fdc94f1"
-authors = ["Matthew Roughan and contributors"]
 version = "0.1.0"
+authors = ["Matthew Roughan and contributors"]
 
 [deps]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[compat]
-Aqua = "0.8"
-JET = "0.10, 0.11"
-Test = "1"
-julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
@@ -19,3 +13,9 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Aqua", "JET", "Test"]
+
+[compat]
+Aqua = "0.8"
+JET = "0.10, 0.11"
+Test = "1"
+julia = "1.10"

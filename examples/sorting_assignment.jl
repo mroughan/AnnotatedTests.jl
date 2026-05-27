@@ -12,5 +12,5 @@ Check that you are returning elements in increasing order.
 
     @atest "preserves length" mysort([3, 1, 2]) == [3, 1, 2] length_feedback()
 
-    @annotated_broken "handles duplicate values" mysort([2, 1, 2]) == [1, 2, 2] unordered_feedback()
+    @annotated_test "handles duplicate values" mysort([2, 1, 2]) == [1, 2, 2] unordered_feedback() broken=true
 end

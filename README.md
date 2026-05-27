@@ -9,6 +9,9 @@
 `AnnotatedTests.jl` is a small extension of Julia's standard `Test` library for
 tests that produce more helpful feedback, especially for teaching.
 
+> AnnotatedTests.jl is experimental. The package is usable, but the public API
+> may change before a stable 1.0 release.
+
 ## Quick start
 
 Install the package from this repository, then use `@annotated_test` anywhere you
@@ -52,15 +55,35 @@ For binary comparisons, `ctx.lhs` and `ctx.rhs` are available as the traditional
 left- and right-hand sides. The aliases `ctx.observed`, `ctx.expected`,
 `ctx.LHS`, and `ctx.RHS` are also provided for feedback text.
 
+## Scope
+
+AnnotatedTests.jl is intentionally a narrow layer over Julia's standard `Test`
+library. It aims to make test failures more understandable by attaching names,
+feedback, and simple comparison context.
+
+It is not intended to be an autograder, learning-management-system integration,
+gradebook, separate test runner, or reporting framework. Features should stay
+small enough that annotated tests remain ordinary Julia tests.
+
 ## Feedback helpers
 
 The package includes small helper constructors for common teaching messages:
 
 ```julia
-@atest "close answer" estimate() ≈ 10 expected_feedback("Check your rounding.")
+@atest "close answer" estimate() ≈ 10 compare_feedback(message="Check your rounding.")
+@atest "close answer with tolerance" estimate() ≈ 10 atol=0.01
 @atest "right type" answer() isa Vector{Int} type_feedback()
 @atest "right length" answer() == expected length_feedback()
 @atest "same items" answer() == expected unordered_feedback()
+```
+
+As with `Test.@test`, trailing keyword arguments other than `broken` and `skip`
+are passed to the tested function or comparison. This makes approximate tests
+easy to migrate:
+
+```julia
+@annotated_test "pi approximation" π ≈ 3.14 atol=0.01
+@annotated_test "pi approximation" isapprox(π, 3.14) atol=0.01
 ```
 
 `≈` records a `difference` term when it can be computed:
@@ -70,30 +93,49 @@ The package includes small helper constructors for common teaching messages:
     "The difference was $(ctx.difference)."
 ```
 
-## Broken annotated tests
+## Broken and skipped annotated tests
 
-Use `@annotated_broken` for known issues or stretch checks. It mirrors
-`Test.@test_broken`: a currently failing condition is recorded as broken, while
-an unexpectedly passing condition is reported by the test framework.
+Use `broken=` and `skip=` for known issues, stretch checks, or tests that should
+not run in the current environment. These keywords mirror `Test.@test`: when the
+condition is true, the test expression is not evaluated and the result is
+recorded as broken/skipped by Julia's test framework.
 
 ```julia
-@annotated_broken "stretch goal" advanced_answer() == expected \
-    "This check documents the next feature to implement."
+@annotated_test "stretch goal" advanced_answer() == expected \
+    "This check documents the next feature to implement." broken=true
+
+@atest "requires optional data" answer_from_file() == expected skip=!isfile(path)
 ```
+
+## Annotated exception tests
+
+Use `@annotated_test_throws` when the expected behavior is an exception:
+
+```julia
+@annotated_test_throws "rejects empty input" ArgumentError parse_answer("") \
+    "Empty input should throw an ArgumentError."
+
+@atest_throws "rejects missing file" SystemError read("missing.txt")
+```
+
+The expected exception can be a type, tuple of types, exception value, string, or
+regular expression. Feedback handlers receive the thrown exception as
+`ctx.observed` or `ctx.thrown`, and the expected exception specification as
+`ctx.expected` or `ctx.expected_exception`.
 
 ## Custom comparison operators
 
 Additional binary operators can be registered with optional derived terms:
 
 ```julia
-within10(x, y) = abs(x - y) <= 10
+relapprox(x, y; rtol=0.05) = abs(x - y) / max(abs(y), eps()) <= rtol
 
-register_annotated_operator!(:within10; terms=(lhs, rhs) -> (
-    difference = abs(lhs - rhs),
+register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
+    relative_difference = abs(lhs - rhs) / max(abs(rhs), eps()),
 ))
 
-@atest "within tolerance" within10(student_answer(), 100) ctx ->
-    "The difference was $(ctx.difference); it must be at most 10."
+@atest "relative error" relapprox(student_answer(), 100; rtol=0.02) ctx ->
+    "The relative difference was $(ctx.relative_difference); it must be below 2%."
 ```
 
 ## Examples

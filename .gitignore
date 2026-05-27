@@ -1,18 +1,20 @@
 # Julia package artifacts
-Manifest.toml
-docs/Manifest.toml
+/Manifest.toml
+/docs/Manifest.toml
 *.jl.cov
 *.jl.*.cov
 *.cov
 *.mem
 lcov.info
+coverage/
 
 # Documenter output
-docs/build/
+/docs/build/
 
 # Local environments and editor state
 .env
 .env.*
+.julia/
 .vscode/
 .idea/
 

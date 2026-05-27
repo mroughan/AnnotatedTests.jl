@@ -47,32 +47,59 @@ expression, but the binary-expression fields are `nothing`.
 ## Feedback Helpers
 
 ```julia
-@atest "close answer" estimate() ≈ 10 expected_feedback("Check your rounding.")
+@atest "close answer" estimate() ≈ 10 compare_feedback(message="Check your rounding.")
+@atest "close answer with tolerance" estimate() ≈ 10 atol=0.01
 @atest "right type" answer() isa Vector{Int} type_feedback()
 @atest "right length" answer() == expected length_feedback()
 @atest "same items" answer() == expected unordered_feedback()
 ```
 
-## Broken Tests
+Trailing keyword arguments other than `broken` and `skip` are forwarded to the
+tested function or comparison, matching `Test.@test`:
 
 ```julia
-@annotated_broken "stretch goal" advanced_answer() == expected \
-    "This check documents the next feature to implement."
+@annotated_test "pi approximation" π ≈ 3.14 atol=0.01
+@annotated_test "pi approximation" isapprox(π, 3.14) atol=0.01
 ```
+
+## Broken And Skipped Tests
+
+```julia
+@annotated_test "stretch goal" advanced_answer() == expected \
+    "This check documents the next feature to implement." broken=true
+
+@atest "requires optional data" answer_from_file() == expected skip=!isfile(path)
+```
+
+When `broken` or `skip` evaluates to `true`, the test expression is not
+evaluated. This mirrors Julia's `Test.@test` behavior.
+
+## Exception Tests
+
+```julia
+@annotated_test_throws "rejects empty input" ArgumentError parse_answer("") \
+    "Empty input should throw an ArgumentError."
+
+@atest_throws "rejects missing file" SystemError read("missing.txt")
+```
+
+The expected exception can be a type, tuple of types, exception value, string, or
+regular expression. Feedback handlers receive `ctx.thrown`, `ctx.thrown_type`,
+`ctx.expected_exception`, and `ctx.message`.
 
 ## Custom Operators
 
 Use [`register_annotated_operator!`](@ref) to add a relation and optional terms:
 
 ```julia
-within10(x, y) = abs(x - y) <= 10
+relapprox(x, y; rtol=0.05) = abs(x - y) / max(abs(y), eps()) <= rtol
 
-register_annotated_operator!(:within10; terms=(lhs, rhs) -> (
-    difference = abs(lhs - rhs),
+register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
+    relative_difference = abs(lhs - rhs) / max(abs(rhs), eps()),
 ))
 
-@atest "within tolerance" within10(student_answer(), 100) ctx ->
-    "The difference was $(ctx.difference); it must be at most 10."
+@atest "relative error" relapprox(student_answer(), 100; rtol=0.02) ctx ->
+    "The relative difference was $(ctx.relative_difference); it must be below 2%."
 ```
 
 ## API
@@ -80,12 +107,12 @@ register_annotated_operator!(:within10; terms=(lhs, rhs) -> (
 ```@docs
 @annotated_test
 @atest
-@annotated_broken
+@annotated_test_throws
+@atest_throws
 @annotated_testset
 AnnotationContext
 default_feedback
 compare_feedback
-expected_feedback
 type_feedback
 length_feedback
 unordered_feedback

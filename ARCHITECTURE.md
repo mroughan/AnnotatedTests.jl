@@ -42,7 +42,7 @@ using AnnotatedTests
 @testset "Assignment 1" begin
     @annotated_test "question 1: sorted result" student_q1(x) == [1,2,3] explain_sorting
     @annotated_test "question 2: type" student_q2() isa Vector{Int} "Your function should return a Vector{Int}."
-    @annotated_broken "extension task" student_q3() == expected "Optional extension."
+    @annotated_test "extension task" student_q3() == expected "Optional extension." broken=true
 end
 ```
 

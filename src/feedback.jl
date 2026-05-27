@@ -19,9 +19,33 @@ This function is used when `@annotated_test` is called without an explicit
 feedback handler. It reports the test name, expression, observed and expected
 values for supported binary comparisons, and operator-specific terms such as
 `difference` when available.
+
+# Example
+
+```julia
+@annotated_test "sorted output" student_sort([3, 1, 2]) == [1, 2, 3]
+```
+
+Example output:
+
+```text
+Test: sorted output
+Expression: :(student_sort([3, 1, 2]) == [1, 2, 3])
+Observed: [3, 1, 2]
+Expected: [1, 2, 3]
+Operator: ==
+```
 """
 function default_feedback(ctx::AnnotationContext)
     header = string("Test: ", ctx.name, "\nExpression: ", _show_expr(ctx.expr))
+    if ctx.op === :throws
+        return string(header,
+                      "\nExpected exception: ", repr(ctx.expected_exception),
+                      "\nThrown exception: ", repr(ctx.thrown),
+                      "\nThrown type: ", ctx.thrown_type,
+                      "\nMessage: ", ctx.message)
+    end
+
     if ctx.op === nothing
         return header * "\nThe condition evaluated to false."
     end
@@ -38,6 +62,27 @@ end
 
 Create a feedback handler for ordinary comparisons. The returned handler prints
 the original expression, observed value, expected value, and any operator terms.
+
+# Examples
+
+```julia
+@annotated_test "computed value" student_answer() == expected compare_feedback()
+
+@annotated_test "computed value" student_answer() == expected \\
+    compare_feedback(message="Check the formula used to compute this value.")
+
+@annotated_test "computed value" student_answer() == expected \\
+    compare_feedback(observed_label="Returned", expected_label="Target")
+```
+
+Example output:
+
+```text
+Expression: :(student_answer() == expected)
+Returned: 17
+Target: 42
+Check the formula used to compute this value.
+```
 """
 function compare_feedback(; message=nothing,
                             observed_label::AbstractString="Observed",
@@ -52,20 +97,27 @@ function compare_feedback(; message=nothing,
 end
 
 """
-    expected_feedback(message="Check the expected value."; kwargs...)
-
-Create a short expected-vs-observed feedback handler. Keyword arguments are
-passed to [`compare_feedback`](@ref).
-"""
-function expected_feedback(message::AbstractString="Check the expected value."; kwargs...)
-    return compare_feedback(; message, kwargs...)
-end
-
-"""
     type_feedback([expected])
 
 Create feedback for type checks. If `expected` is omitted and the annotated
 expression uses `isa`, the right-hand side of the comparison is shown.
+
+# Examples
+
+```julia
+@annotated_test "returns integers" student_values() isa Vector{Int} type_feedback()
+
+@annotated_test "returns vector" student_values() isa AbstractVector \\
+    type_feedback(Vector{Int})
+```
+
+Example output:
+
+```text
+Expected type: Vector{Int64}
+Observed type: Vector{Float64}
+Observed value: [1.0, 2.0, 3.0]
+```
 """
 function type_feedback(expected=nothing)
     return ctx -> begin
@@ -81,6 +133,24 @@ end
 
 Create feedback that includes observed and expected lengths when they are
 available.
+
+# Examples
+
+```julia
+@annotated_test "preserves length" student_values() == expected_values length_feedback()
+
+@annotated_test "returns three values" student_values() == expected_values \\
+    length_feedback(3)
+```
+
+Example output:
+
+```text
+Observed length: 2
+Expected length: 3
+Observed value: [1, 2]
+Expected value: [1, 2, 3]
+```
 """
 function length_feedback(expected=nothing)
     return ctx -> begin
@@ -97,6 +167,20 @@ end
     unordered_feedback()
 
 Create feedback for collection comparisons where order might be the issue.
+
+# Example
+
+```julia
+@annotated_test "same values" student_values() == [1, 2, 3] unordered_feedback()
+```
+
+Example output:
+
+```text
+The values match, but the order is different.
+Observed: [1, 3, 2]
+Expected: [1, 2, 3]
+```
 """
 function unordered_feedback()
     return ctx -> begin

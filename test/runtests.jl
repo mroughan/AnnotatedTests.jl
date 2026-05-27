@@ -58,13 +58,65 @@ using Test
                                 [1, 3, 2], [1, 2, 3], false)
 
         @test occursin("Observed: [1, 3, 2]", compare_feedback()(ctx))
-        @test occursin("Try again.", expected_feedback("Try again.")(ctx))
+        @test occursin("Try again.", compare_feedback(message="Try again.")(ctx))
         @test occursin("Observed length: 3", length_feedback()(ctx))
         @test occursin("order is different", unordered_feedback()(ctx))
 
         type_ctx = AnnotationContext("type", :(student() isa Vector{Int}), :isa,
                                      :(student()), :(Vector{Int}), [1, 2], Vector{Int}, false)
         @test occursin("Observed type: Vector{Int64}", type_feedback()(type_ctx))
+    end
+
+    @testset "throws" begin
+        @annotated_test_throws "domain error" DomainError sqrt(-1)
+        @atest_throws "short alias domain error" DomainError sqrt(-1)
+        @annotated_test_throws "tuple of errors" (ArgumentError, DomainError) sqrt(-1)
+        @annotated_test_throws "message regex" r"Domain" sqrt(-1)
+        @annotated_test_throws "message string" "Domain" sqrt(-1)
+
+        err = ErrorException("bad input")
+        @test AnnotatedTests._exception_matches(ErrorException, err)
+        @test AnnotatedTests._exception_matches((ArgumentError, ErrorException), err)
+        @test AnnotatedTests._exception_matches(r"bad", err)
+        @test AnnotatedTests._exception_matches("input", err)
+        @test AnnotatedTests._exception_matches(ErrorException("bad input"), err)
+        @test !AnnotatedTests._exception_matches(ArgumentError, err)
+        @test !AnnotatedTests._exception_matches(ErrorException, nothing)
+
+        ctx = AnnotationContext("throws", :(parse(Int, "x")), :throws,
+                                nothing, :(ArgumentError), err, ArgumentError, false,
+                                AnnotatedTests._throws_terms(ArgumentError, err))
+        msg = default_feedback(ctx)
+        @test occursin("Expected exception", msg)
+        @test occursin("Thrown exception", msg)
+        @test ctx.thrown === err
+        @test ctx.expected_exception === ArgumentError
+    end
+
+    @testset "broken and skip keywords" begin
+        calls = Ref(0)
+        should_not_run() = (calls[] += 1; error("should not run"))
+
+        @annotated_test "broken keyword" should_not_run() broken=true
+        @annotated_test "skip keyword" should_not_run() skip=true
+        @atest "short alias broken keyword" should_not_run() broken=true
+        @annotated_test_throws "throws broken keyword" ErrorException should_not_run() broken=true
+        @annotated_test_throws "throws skip keyword" ErrorException should_not_run() skip=true
+
+        @test calls[] == 0
+
+        flag = true
+        @annotated_test "conditional normal" flag == true broken=false skip=false
+    end
+
+    @testset "Test-style keyword arguments" begin
+        @annotated_test "approx atol" π ≈ 3.14 atol=0.01
+        @atest "approx atol with handler" π ≈ 3.14 "pi should be close" atol=0.01
+        @annotated_test "isapprox atol" isapprox(π, 3.14) atol=0.01
+
+        tol = 0.01
+        @annotated_test "approx variable atol" π ≈ 3.14 atol=tol
+        @annotated_test "approx with explicit control keywords" π ≈ 3.14 atol=tol broken=false skip=false
     end
 
     @testset "operator terms" begin
@@ -75,6 +127,14 @@ using Test
         @test AnnotatedTests._binary_parts(:(within10(1, 20))) == (:within10, 1, 20)
         @test AnnotatedTests._operator_terms(:within10, 1, 20).difference == 19
         @annotated_test "custom operator pass" within10(10, 12) "should not appear"
+
+        relapprox(x, y; rtol=0.05) = abs(x - y) / max(abs(y), eps()) <= rtol
+        register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
+            relative_difference=abs(lhs - rhs) / max(abs(rhs), eps()),
+        ))
+        @test AnnotatedTests._binary_parts(:(relapprox(99, 100; rtol=0.02))) == (:relapprox, 99, 100)
+        @test AnnotatedTests._operator_terms(:relapprox, 99, 100).relative_difference == 0.01
+        @atest "relative operator pass" relapprox(99, 100; rtol=0.02) "should not appear"
     end
 
     @testset "single evaluation" begin
@@ -92,7 +152,7 @@ using Test
         @annotated_test "less-than" 1 < 2 "ok"
     end
 
-    @annotated_broken "known issue" 1 == 2 "This is expected to fail for now."
+    @annotated_test "known issue" 1 == 2 "This is expected to fail for now." broken=true
 
     wrapper_name = "wrapper variable name"
     observed = Ref(false)
