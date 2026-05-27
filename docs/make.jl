@@ -14,7 +14,7 @@ makedocs(
     sitename="AnnotatedTests.jl",
     format=Documenter.HTML(
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://matthew.roughan@adelaide.edu.au.github.io/AnnotatedTests.jl",
+        canonical="https://mroughan.github.io/AnnotatedTests.jl",
         assets=String[],
     ),
     pages=[

@@ -7,6 +7,8 @@ semantic versioning once public releases are tagged.
 
 ## Unreleased
 
+## 0.1.0 - 2026-05-28
+
 - Added annotated test macros, including `@annotated_test`, `@atest`,
   `@annotated_test_throws`, `@atest_throws`, and `@annotated_testset`.
 - Added `broken=` and `skip=` keyword support for annotated tests.
@@ -25,7 +27,3 @@ semantic versioning once public releases are tagged.
 - Added contributing and AI-agent guidance for future development.
 - Added Documenter.jl documentation, Aqua.jl and JET.jl test checks, Codecov
   upload, and GitHub Actions workflows.
-
-## 0.1.0
-
-- Initial public development version.
