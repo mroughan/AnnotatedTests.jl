@@ -151,7 +151,7 @@ macro annotated_testset(name, block)
     name_sym = gensym(:name)
     return quote
         local $name_sym = $(esc(name))
-        @testset $name_sym begin
+        @testset $(Expr(:string, name_sym)) begin
             $(esc(block))
         end
     end

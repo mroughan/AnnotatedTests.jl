@@ -58,6 +58,13 @@ using Test
     @annotated_testset "wrapper" begin
         @annotated_test "less-than" 1 < 2 "ok"
     end
+
+    wrapper_name = "wrapper variable name"
+    observed = Ref(false)
+    @annotated_testset wrapper_name begin
+        observed[] = true
+        @test observed[]
+    end
 end
 
 @testset "Aqua" begin
