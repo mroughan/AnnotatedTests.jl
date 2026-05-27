@@ -165,8 +165,14 @@ Codecov.
 
 ## AI use disclosure
 
-Some documentation, test, and continuous-integration improvements in this
-repository were prepared with assistance from OpenAI's Codex. Changes should be
-reviewed and maintained by the package authors, and generated text should be
-edited whenever it does not match the intended teaching style or package
-behavior.
+This package was developed with assistance from OpenAI Codex, an AI coding
+assistant based on GPT-5. Code design decisions were human mediated, and the
+resulting code was manually reviewed.
+
+## Notes:
+
+The compat of this library was set to the latest (at the time) Julia,
+ie v1.12, but that was primarily to support testing with JET. Other
+tests are indicative that it should work with versions as early as
+1.10.
+
