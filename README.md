@@ -160,9 +160,11 @@ julia --project=docs docs/make.jl
 
 ## Quality checks
 
-The test suite includes Aqua.jl and JET.jl checks. GitHub Actions are configured
-to run the package tests, build the documentation, and upload coverage reports to
-Codecov.
+The ordinary test suite includes Aqua.jl and is intended to run on Julia 1.10
+and later. JET.jl static analysis is run as a separate GitHub Actions job on
+Julia 1.12, so JET's compiler-version requirements do not set the minimum Julia
+version for package users. GitHub Actions are also configured to build the
+documentation and upload coverage reports to Codecov.
 
 ## AI use disclosure
 
@@ -170,9 +172,7 @@ This package was developed with assistance from OpenAI Codex, an AI coding
 assistant based on GPT-5. Code design decisions were human mediated, and the
 resulting code was manually reviewed.
 
-## Notes:
+## Notes
 
-The compat of this library was set to the latest (at the time) Julia,
-ie v1.12, but that was primarily to support testing with JET. Other
-tests are indicative that it should work with versions as early as
-1.10.
+The package compatibility is set to Julia 1.10 and later. Development tooling
+may use newer Julia versions where individual tools require them.

@@ -33,6 +33,12 @@ annotated checks behave like ordinary Julia tests. Avoid adding a separate test
 runner, grading engine, report format, or assignment-management workflow until
 there is a clear need.
 
+Development-only tools should not unnecessarily raise the package's minimum
+Julia version. The ordinary test suite should track the supported user-facing
+Julia compatibility, while static analysis tools such as JET can run in
+separate CI jobs on newer Julia versions when they require newer compiler
+internals.
+
 ## Example use
 
 ```

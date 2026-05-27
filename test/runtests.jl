@@ -1,6 +1,5 @@
 using AnnotatedTests
 using Aqua
-using JET
 using Test
 
 @testset "AnnotatedTests" begin
@@ -176,9 +175,4 @@ end
 
 @testset "Aqua" begin
     Aqua.test_all(AnnotatedTests)
-end
-
-@testset "JET" begin
-    report = JET.report_package(AnnotatedTests; target_modules=(AnnotatedTests,))
-    @test isempty(JET.get_reports(report))
 end
