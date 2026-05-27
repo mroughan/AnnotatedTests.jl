@@ -6,7 +6,7 @@ Pkg.instantiate()
 using Documenter
 using AnnotatedTests
 
-DocMeta.setdocmeta!(IncCSV, :DocTestSetup, :(using AnnotatedTests); recursive=true)
+DocMeta.setdocmeta!(AnnotatedTests, :DocTestSetup, :(using AnnotatedTests); recursive=true)
 
 makedocs(
     modules=[AnnotatedTests],
