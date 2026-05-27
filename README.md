@@ -140,8 +140,9 @@ register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
 
 ## Examples
 
-See [`examples/sorting_assignment.jl`](examples/sorting_assignment.jl) for a
-small teaching-oriented example.
+See [`examples/README.md`](examples/README.md) for two small teaching-oriented
+examples: one that passes, and one with deliberate failures for inspecting
+annotated feedback.
 
 ## Running tests
 
@@ -175,4 +176,3 @@ The compat of this library was set to the latest (at the time) Julia,
 ie v1.12, but that was primarily to support testing with JET. Other
 tests are indicative that it should work with versions as early as
 1.10.
-

@@ -1,7 +1,7 @@
 function _record_failure(name::String, ctx::AnnotationContext, message::String)
     fullmsg = "Annotated test failed: " * name * "\n" * message
-    @test ctx.value
     println(stderr, fullmsg)
+    @test false
     return false
 end
 

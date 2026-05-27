@@ -121,6 +121,13 @@ using Test
 
     @testset "operator terms" begin
         @test AnnotatedTests._operator_terms(Symbol("≈"), 1.0, 1.25).difference == 0.25
+        @test AnnotatedTests._operator_terms(Symbol("≈"), [1.0, 2.0], [1.0, 2.5]).difference == 0.5
+        @test AnnotatedTests._operator_terms(Symbol("≈"), "left", "right") == (;)
+        @test AnnotatedTests._operator_terms(Symbol("=="), 1, 1) == (;)
+        @test AnnotatedTests._operator_terms(:not_registered, 1, 2) == (;)
+
+        register_annotated_operator!(:badterms; terms=(lhs, rhs) -> "not a NamedTuple")
+        @test_throws ArgumentError AnnotatedTests._operator_terms(:badterms, 1, 2)
 
         within10(x, y) = abs(x - y) <= 10
         register_annotated_operator!(:within10; terms=(lhs, rhs) -> (difference=abs(lhs - rhs),))
@@ -135,6 +142,11 @@ using Test
         @test AnnotatedTests._binary_parts(:(relapprox(99, 100; rtol=0.02))) == (:relapprox, 99, 100)
         @test AnnotatedTests._operator_terms(:relapprox, 99, 100).relative_difference == 0.01
         @atest "relative operator pass" relapprox(99, 100; rtol=0.02) "should not appear"
+
+        @test AnnotatedTests._binary_parts(:not_an_expr) === nothing
+        @test AnnotatedTests._binary_parts(:(1 + 2 + 3)) === nothing
+        @test AnnotatedTests._binary_parts(:(unknown_relation(1, 2))) === nothing
+        @test AnnotatedTests._binary_parts(:(within10(1, 2, 3))) === nothing
     end
 
     @testset "single evaluation" begin

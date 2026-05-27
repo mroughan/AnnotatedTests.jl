@@ -25,6 +25,9 @@ relapprox(x, y; rtol=0.05) = abs(x - y) / max(abs(y), eps()) <= rtol
 register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
     relative_difference = abs(lhs - rhs) / max(abs(rhs), eps()),
 ))
+
+@atest "relative error" relapprox(student_answer(), 100; rtol=0.02) ctx ->
+    "The relative difference was \$(ctx.relative_difference); it must be below 2%."
 ```
 """
 function register_annotated_operator!(op::Symbol; terms=_no_terms)
