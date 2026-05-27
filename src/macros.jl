@@ -44,10 +44,10 @@ function _record_quiet_failure(name::String, ctx::AnnotationContext)
 end
 
 function _record_failure(name::String, ctx::AnnotationContext, message::String)
-    printstyled(stderr, "Annotated test failed: " * name; color=:red, bold=true)
-    println(stderr)
-    println(stderr, rstrip(message))
-    println(stderr)
+    printstyled(stdout, "Annotated test failed: " * name; color=:red, bold=true)
+    println(stdout)
+    println(stdout, rstrip(message))
+    println(stdout)
     if _SHOW_STANDARD_FAILURE[]
         @test false
     else

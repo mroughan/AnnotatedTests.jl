@@ -93,8 +93,8 @@ struct OpaqueValue end
         ctx = AnnotationContext("recorded", :(1 == 2), Symbol("=="), :1, :2, 1, 2, false)
         captured = Ref{CapturingTestSet}()
 
-        stderr_text = mktemp() do path, io
-            captured[] = redirect_stderr(io) do
+        output_text = mktemp() do path, io
+            captured[] = redirect_stdout(io) do
                 @testset CapturingTestSet "captured failure" begin
                     @test AnnotatedTests._record_failure("recorded", ctx, "specific feedback") == false
                 end
@@ -104,8 +104,8 @@ struct OpaqueValue end
             read(path, String)
         end
 
-        @test occursin("Annotated test failed: recorded", stderr_text)
-        @test occursin("specific feedback", stderr_text)
+        @test occursin("Annotated test failed: recorded", output_text)
+        @test occursin("specific feedback", output_text)
         @test length(captured[].results) == 2
         @test captured[].results[1] isa Test.Fail
         @test captured[].results[2] isa Test.Pass
@@ -117,8 +117,8 @@ struct OpaqueValue end
         captured = Ref{CapturingTestSet}()
 
         try
-            stderr_text = mktemp() do path, io
-                captured[] = redirect_stderr(io) do
+            output_text = mktemp() do path, io
+                captured[] = redirect_stdout(io) do
                     @testset CapturingTestSet "captured quiet failure" begin
                         AnnotatedTests._record_failure("quiet", ctx, "student-facing feedback")
                     end
@@ -128,8 +128,8 @@ struct OpaqueValue end
                 read(path, String)
             end
 
-            @test occursin("Annotated test failed: quiet", stderr_text)
-            @test occursin("student-facing feedback", stderr_text)
+            @test occursin("Annotated test failed: quiet", output_text)
+            @test occursin("student-facing feedback", output_text)
             @test length(captured[].results) == 1
             @test captured[].results[1] isa Test.Fail
         finally

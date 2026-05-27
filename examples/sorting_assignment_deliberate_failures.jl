@@ -6,6 +6,8 @@ using AnnotatedTests
 # see when their solution has common mistakes. Annotated failures are separated
 # by a blank line to make the output easier to scan.
 
+set_annotated_test_output!(show_standard_failure=true)
+
 mysort(xs) = xs
 
 explain_sort(ctx) = """
