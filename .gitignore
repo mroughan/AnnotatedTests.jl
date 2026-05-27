@@ -1,0 +1,21 @@
+# Julia package artifacts
+Manifest.toml
+docs/Manifest.toml
+*.jl.cov
+*.jl.*.cov
+*.cov
+*.mem
+lcov.info
+
+# Documenter output
+docs/build/
+
+# Local environments and editor state
+.env
+.env.*
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

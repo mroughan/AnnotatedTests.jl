@@ -1,5 +1,11 @@
 # AnnotatedTests.jl
 
+[![CI](https://github.com/YOUR-ORG/AnnotatedTests.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/YOUR-ORG/AnnotatedTests.jl/actions/workflows/CI.yml)
+[![Documentation](https://img.shields.io/badge/docs-Documenter.jl-blue.svg)](docs/build/index.html)
+[![Codecov](https://codecov.io/gh/YOUR-ORG/AnnotatedTests.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR-ORG/AnnotatedTests.jl)
+[![Aqua QA](https://img.shields.io/badge/qa-Aqua.jl-4c8eda.svg)](https://github.com/JuliaTesting/Aqua.jl)
+[![JET](https://img.shields.io/badge/static%20analysis-JET.jl-9558b2.svg)](https://github.com/aviatesk/JET.jl)
+
 `AnnotatedTests.jl` is a small extension of Julia's standard `Test` library for
 tests that produce more helpful feedback, especially for teaching.
 
