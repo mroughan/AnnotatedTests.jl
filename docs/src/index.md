@@ -74,6 +74,36 @@ tested function or comparison, matching `Test.@test`:
 When `broken` or `skip` evaluates to `true`, the test expression is not
 evaluated. This mirrors Julia's `Test.@test` behavior.
 
+## Simpler Student-Facing Output
+
+By default, a failed annotated test prints a red, bold annotated-failure heading,
+the custom feedback, and Julia's standard failure output. Feedback blocks are
+separated by a blank line so multiple annotated failures are easier to scan.
+
+To keep the failure counted by `Test` while suppressing the immediate standard
+failure block and stack trace:
+
+```julia
+set_annotated_test_output!(show_standard_failure=false)
+```
+
+This is useful when annotated feedback is the message students should focus on.
+The option is global for the current Julia session. Save and restore the
+previous value when you only want quiet output for part of a test file:
+
+```julia
+old = set_annotated_test_output!(show_standard_failure=false)
+try
+    @atest "sorts values" student_sort([3, 1, 2]) == [1, 2, 3] \
+        "Return the values in increasing order."
+finally
+    set_annotated_test_output!(show_standard_failure=old)
+end
+```
+
+See `examples/sorting_assignment_quiet_failures.jl` for a complete deliberately
+failing example that uses this mode and shows the simplified spacing.
+
 ## Exception Tests
 
 ```julia
@@ -117,4 +147,5 @@ type_feedback
 length_feedback
 unordered_feedback
 register_annotated_operator!
+set_annotated_test_output!
 ```

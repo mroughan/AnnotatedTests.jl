@@ -20,7 +20,7 @@ short alias.
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/YOUR-ORG/AnnotatedTests.jl")
+Pkg.add(url="https://github.com/mroughan/AnnotatedTests.jl")
 ```
 
 ```julia
@@ -107,6 +107,36 @@ recorded as broken/skipped by Julia's test framework.
 @atest "requires optional data" answer_from_file() == expected skip=!isfile(path)
 ```
 
+## Simpler student-facing output
+
+By default, a failing annotated test prints a red, bold annotated-failure heading
+followed by the custom feedback, then records an ordinary Julia `@test false`,
+including Julia's standard failure details. Feedback blocks are separated by a
+blank line to make multiple failures easier to scan.
+
+For student-facing runs, you can suppress Julia's immediate standard failure
+block while still counting the result as a failed test:
+
+```julia
+set_annotated_test_output!(show_standard_failure=false)
+```
+
+`Pkg.test()` will still fail when annotated tests fail; this option only reduces
+the extra diagnostic text printed for each annotated failure.
+
+The option is global for the current Julia session. If you only want it for one
+test file or one block, save and restore the previous value:
+
+```julia
+old = set_annotated_test_output!(show_standard_failure=false)
+try
+    @atest "sorts values" student_sort([3, 1, 2]) == [1, 2, 3] \
+        "Return the values in increasing order."
+finally
+    set_annotated_test_output!(show_standard_failure=old)
+end
+```
+
 ## Annotated exception tests
 
 Use `@annotated_test_throws` when the expected behavior is an exception:
@@ -140,9 +170,11 @@ register_annotated_operator!(:relapprox; terms=(lhs, rhs) -> (
 
 ## Examples
 
-See [`examples/README.md`](examples/README.md) for two small teaching-oriented
-examples: one that passes, and one with deliberate failures for inspecting
-annotated feedback.
+See [`examples/README.md`](examples/README.md) for three small teaching-oriented
+examples: one that passes, one with deliberate failures for inspecting standard
+annotated feedback, and one with deliberate failures using simpler
+student-facing output. The quiet deliberate-failure example is useful for
+checking the red annotated headings and blank-line spacing.
 
 ## Running tests
 

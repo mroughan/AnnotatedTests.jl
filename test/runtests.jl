@@ -2,6 +2,18 @@ using AnnotatedTests
 using Aqua
 using Test
 
+struct CapturingTestSet <: Test.AbstractTestSet
+    description::String
+    results::Vector{Any}
+
+    CapturingTestSet(description) = new(description, Any[])
+end
+
+Test.record(ts::CapturingTestSet, result) = (push!(ts.results, result); result)
+Test.finish(ts::CapturingTestSet) = ts
+
+struct OpaqueValue end
+
 @testset "AnnotatedTests" begin
     @annotated_test "simple pass" 1 + 1 == 2 "should not appear"
     @atest "short alias pass" 2 + 2 == 4 "should not appear"
@@ -35,6 +47,9 @@ using Test
     @testset "handler forms" begin
         ctx = AnnotationContext("handler", :(1 > 2), Symbol(">"), :1, :2, 1, 2, false)
         @test AnnotatedTests._feedback_message("Use a true condition.", ctx) == "Use a true condition."
+        @test AnnotatedTests._exception_matches(:sentinel, :sentinel)
+        @test_throws ArgumentError AnnotatedTests._parse_annotated_args((Expr(:(=), :(config.value), true),))
+        @test_throws ArgumentError AnnotatedTests._parse_annotated_args(("first handler", "second handler"))
 
         struct PrefixFeedback
             prefix::String
@@ -64,6 +79,62 @@ using Test
         type_ctx = AnnotationContext("type", :(student() isa Vector{Int}), :isa,
                                      :(student()), :(Vector{Int}), [1, 2], Vector{Int}, false)
         @test occursin("Observed type: Vector{Int64}", type_feedback()(type_ctx))
+
+        opaque_ctx = AnnotationContext("opaque", :(left == right), Symbol("=="),
+                                       :left, :right, OpaqueValue(), OpaqueValue(), false)
+        length_msg = length_feedback()(opaque_ctx)
+        @test occursin("Observed length: unknown", length_msg)
+        @test occursin("Expected length: unknown", length_msg)
+        @test occursin("do not match", unordered_feedback()(opaque_ctx))
+        @test AnnotatedTests._same_items_unordered(OpaqueValue(), OpaqueValue()) === nothing
+    end
+
+    @testset "recorded failure helper" begin
+        ctx = AnnotationContext("recorded", :(1 == 2), Symbol("=="), :1, :2, 1, 2, false)
+        captured = Ref{CapturingTestSet}()
+
+        stderr_text = mktemp() do path, io
+            captured[] = redirect_stderr(io) do
+                @testset CapturingTestSet "captured failure" begin
+                    @test AnnotatedTests._record_failure("recorded", ctx, "specific feedback") == false
+                end
+            end
+            flush(io)
+            close(io)
+            read(path, String)
+        end
+
+        @test occursin("Annotated test failed: recorded", stderr_text)
+        @test occursin("specific feedback", stderr_text)
+        @test length(captured[].results) == 2
+        @test captured[].results[1] isa Test.Fail
+        @test captured[].results[2] isa Test.Pass
+    end
+
+    @testset "quiet annotated failures" begin
+        ctx = AnnotationContext("quiet", :(1 == 2), Symbol("=="), :1, :2, 1, 2, false)
+        old = set_annotated_test_output!(show_standard_failure=false)
+        captured = Ref{CapturingTestSet}()
+
+        try
+            stderr_text = mktemp() do path, io
+                captured[] = redirect_stderr(io) do
+                    @testset CapturingTestSet "captured quiet failure" begin
+                        AnnotatedTests._record_failure("quiet", ctx, "student-facing feedback")
+                    end
+                end
+                flush(io)
+                close(io)
+                read(path, String)
+            end
+
+            @test occursin("Annotated test failed: quiet", stderr_text)
+            @test occursin("student-facing feedback", stderr_text)
+            @test length(captured[].results) == 1
+            @test captured[].results[1] isa Test.Fail
+        finally
+            set_annotated_test_output!(show_standard_failure=old)
+        end
     end
 
     @testset "throws" begin
@@ -119,6 +190,10 @@ using Test
     end
 
     @testset "operator terms" begin
+        @test AnnotatedTests._register_default_operators!() === nothing
+        @test AnnotatedTests._binary_parts(:(1 === 1)) == (Symbol("==="), 1, 1)
+        @test AnnotatedTests._binary_parts(:(1 in [1, 2])) == (:in, 1, :([1, 2]))
+
         @test AnnotatedTests._operator_terms(Symbol("≈"), 1.0, 1.25).difference == 0.25
         @test AnnotatedTests._operator_terms(Symbol("≈"), [1.0, 2.0], [1.0, 2.5]).difference == 0.5
         @test AnnotatedTests._operator_terms(Symbol("≈"), "left", "right") == (;)

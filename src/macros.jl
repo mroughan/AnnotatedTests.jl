@@ -1,7 +1,58 @@
+const _SHOW_STANDARD_FAILURE = Ref(true)
+
+"""
+    set_annotated_test_output!(; show_standard_failure=true)
+
+Configure how annotated failures are recorded.
+
+By default, annotated failures print a red, bold heading, the custom feedback,
+and then use Julia's standard `@test false` failure output. Feedback blocks are
+separated by a blank line. Set `show_standard_failure=false` to keep the failure
+counted by `Test` while suppressing Julia's immediate failure block and stack
+trace. This can make output easier for students to read.
+
+The function returns the previous value so callers can restore it later.
+
+# Example
+
+```julia
+old = set_annotated_test_output!(show_standard_failure=false)
+try
+    @atest "sorts values" student_sort([3, 1, 2]) == [1, 2, 3] \\
+        "Return the values in increasing order."
+finally
+    set_annotated_test_output!(show_standard_failure=old)
+end
+```
+"""
+function set_annotated_test_output!(; show_standard_failure::Bool=true)
+    old = _SHOW_STANDARD_FAILURE[]
+    _SHOW_STANDARD_FAILURE[] = show_standard_failure
+    return old
+end
+
+function _record_quiet_failure(name::String, ctx::AnnotationContext)
+    result = Test.Fail(:test, ctx.expr, nothing, false, nothing,
+                       LineNumberNode(0, Symbol(name)), true)
+    try
+        Test.record(Test.get_testset(), result; print_result=false)
+    catch err
+        err isa MethodError || rethrow()
+        Test.record(Test.get_testset(), result)
+    end
+    return false
+end
+
 function _record_failure(name::String, ctx::AnnotationContext, message::String)
-    fullmsg = "Annotated test failed: " * name * "\n" * message
-    println(stderr, fullmsg)
-    @test false
+    printstyled(stderr, "Annotated test failed: " * name; color=:red, bold=true)
+    println(stderr)
+    println(stderr, rstrip(message))
+    println(stderr)
+    if _SHOW_STANDARD_FAILURE[]
+        @test false
+    else
+        _record_quiet_failure(name, ctx)
+    end
     return false
 end
 

@@ -12,6 +12,7 @@ export @annotated_test,
        default_feedback,
        length_feedback,
        register_annotated_operator!,
+       set_annotated_test_output!,
        type_feedback,
        unordered_feedback
 

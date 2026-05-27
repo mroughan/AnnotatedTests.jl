@@ -17,6 +17,12 @@ semantic versioning once public releases are tagged.
   unordered collections, and expected-vs-observed messages.
 - Added support for registering custom binary relations with derived context
   terms such as `difference`.
+- Added configurable student-facing failure output with
+  `set_annotated_test_output!(show_standard_failure=false)`.
+- Styled annotated failure headings in red and separated annotated feedback
+  blocks with a blank line.
+- Added passing, deliberately failing, and quiet deliberately failing examples.
+- Added contributing and AI-agent guidance for future development.
 - Added Documenter.jl documentation, Aqua.jl and JET.jl test checks, Codecov
   upload, and GitHub Actions workflows.
 
