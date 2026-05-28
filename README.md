@@ -17,7 +17,7 @@
 
 Install the package with Julia's package manager, then use `@annotated_test`
 anywhere you would normally use `Test.@test`. For frequent classroom tests,
-`@atest` is a short alias.
+`@atest` is a short alias. 
 
 ```julia
 using Pkg
